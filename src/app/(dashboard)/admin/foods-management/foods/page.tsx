@@ -1,10 +1,17 @@
+import { FoodCard } from "./_compenents/food-card";
+import { FoodFiltersDrawer } from "./_compenents/food-filiters-drawer";
 import { FoodFormDialog } from "./_compenents/food-form-dialog";
 
 const Page = () => {
   return (
-    <>
-      <FoodFormDialog />
-    </>
+    <div className="space-y-2">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-3xl font-semibold">Foods List</h1>
+        <FoodFormDialog />
+      </div>
+      <FoodFiltersDrawer />
+      <FoodCard />
+    </div>
   );
 };
 

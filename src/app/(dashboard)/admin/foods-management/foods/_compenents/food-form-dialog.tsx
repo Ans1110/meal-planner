@@ -89,7 +89,8 @@ const FoodFormDialog = () => {
     <Dialog open={foodDialogOpen} onOpenChange={handleDialogOpenChange}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="mr-2">New Food</Plus>
+          <Plus className="mr-2" />
+          New Food
         </Button>
       </DialogTrigger>
       <DialogContent>

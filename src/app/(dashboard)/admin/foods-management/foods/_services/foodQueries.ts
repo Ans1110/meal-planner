@@ -1,3 +1,4 @@
+"use server";
 import { Prisma } from "$/generated/prisma";
 import { PaginatedResult } from "@/lib/types/paginatedResult";
 import {
