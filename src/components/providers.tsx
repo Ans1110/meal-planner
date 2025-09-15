@@ -4,13 +4,26 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "./ui/sonner";
 import { AlertDialogProvider } from "./ui/alert-dialog-provider";
+import { toast } from "sonner";
 
 type ProvidersProps = {
   children: React.ReactNode;
 };
 
 export default function Providers({ children }: ProvidersProps) {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      mutations: {
+        onError: (e) => {
+          if (e.message === "NEXT_REDIRECT") return;
+          toast.error(e.message);
+        },
+        onSuccess: () => {
+          toast.success("Operation successful");
+        },
+      },
+    },
+  });
   return (
     <QueryClientProvider client={queryClient}>
       <NextThemesProvider

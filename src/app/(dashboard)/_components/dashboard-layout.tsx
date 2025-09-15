@@ -30,6 +30,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import z from "zod";
 import { customErrorMap } from "@/lib/customErrorMap";
+import { Session } from "next-auth";
+import { useSignOut } from "@/app/(auth)/sign-in/_services/use-sign-in-mutations";
+import { Role } from "$/generated/prisma";
 z.setErrorMap(customErrorMap);
 
 type RouteGroupeType = {
@@ -43,6 +46,7 @@ type RouteGroupeType = {
 
 type DashboardLayoutProps = {
   children: React.ReactNode;
+  session: Session;
 };
 
 const ROUTE_GROUPS: RouteGroupeType[] = [
@@ -124,8 +128,25 @@ const RouteGroup = ({ group, items }: RouteGroupeType) => {
   );
 };
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout({
+  children,
+  session,
+}: DashboardLayoutProps) {
   const [open, setOpen] = useState(false);
+  const signOutMutation = useSignOut();
+  const userRole = session.user.role;
+
+  const filteredRouteGroups = ROUTE_GROUPS.filter((group) => {
+    if (userRole === Role.ADMIN) {
+      return group.group === "Foods Management";
+    } else {
+      return group.group === "Meals Management";
+    }
+  });
+
+  const handleLogout = () => {
+    signOutMutation.mutate();
+  };
   return (
     <div className="flex">
       <div className="bg-background fixed flex z-10 h-13 w-screen items-center justify-between border px-2">
@@ -138,39 +159,45 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </Collapsible.Root>
         <div className="flex">
           <ThemeToggle />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                className="flex h-9 items-center gap-2 px-2"
-                variant="ghost"
-              >
-                <Avatar className="size-8">
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <span className="hidden md:inline">Admin</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <div className="flex items-center gap-3 px-2 py-1.5">
-                <Avatar className="size-10">
-                  <AvatarFallback>A</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium">Admin</p>
-                  <p className="text-muted-foreground text-xs">
-                    admin@admin.com
-                  </p>
+          {session && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className="flex h-9 items-center gap-2 px-2"
+                  variant="ghost"
+                >
+                  <Avatar className="size-8">
+                    <AvatarFallback>
+                      {session.user.name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden md:inline">{session.user.name}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="flex items-center gap-3 px-2 py-1.5">
+                  <Avatar className="size-10">
+                    <AvatarFallback>
+                      {session.user.name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">{session.user.name}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {session.user.email}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onClick={() => {}}>
-                <LogOut className="size-4" />
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onClick={handleLogout}>
+                  <LogOut className="size-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
       <Collapsible.Root
@@ -192,7 +219,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             <Separator className="my-2" />
             <div className="mt-4">
-              {ROUTE_GROUPS.map((routeGroup) => (
+              {filteredRouteGroups.map((routeGroup) => (
                 <RouteGroup {...routeGroup} key={routeGroup.group} />
               ))}
             </div>
